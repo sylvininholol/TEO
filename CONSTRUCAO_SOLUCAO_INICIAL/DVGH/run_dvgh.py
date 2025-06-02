@@ -25,7 +25,7 @@ if all_instances_in_O_500:
     fresh_instance_data_for_dvgh = read_kpf_instance(instance_reference_for_dvgh['filepath'])
     
     print(f"\n--- Resolvendo instância com DVGH (dados frescos): {fresh_instance_data_for_dvgh['filepath']} ---")
-    print(f"Número de itens: {fresh_instance_data_for_dvgh['num_items']}, Capacidade: {fresh_instance_data_for_dvgh['capacity']}")
+    print(f"Número de itens: {fresh_instance_data_for_dvgh['num_items']}, Capacidade: {fresh_instance_data_for_dvgh['capacity']}, Número de pares com penalidade: {fresh_instance_data_for_dvgh['num_forfeits']}")
 
     # Opcional: Imprimir os pares de penalidade da instância (agora usando os dados frescos)
     # print_forfeit_pairs(fresh_instance_data_for_dvgh)

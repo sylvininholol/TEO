@@ -18,7 +18,7 @@ if all_instances_in_O_500:
     instance_to_solve = all_instances_in_O_500[0] 
     
     print(f"\n--- Resolvendo instância: {instance_to_solve['filepath']} ---")
-    print(f"Número de itens: {instance_to_solve['num_items']}, Capacidade: {instance_to_solve['capacity']}")
+    print(f"Número de itens: {instance_to_solve['num_items']}, Capacidade: {instance_to_solve['capacity']}, Número de pares com penalidade: {instance_to_solve['num_forfeits']}")
 
     # 2. Executar o GRASP na instância selecionada
     # Parâmetros do GRASP (podem ser ajustados)
