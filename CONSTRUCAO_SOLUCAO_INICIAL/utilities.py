@@ -90,25 +90,6 @@ def load_instances_from_directory(directory_path):
                 print(f"  Erro ao ler o arquivo {filename}: {e}")
     return instances
 
-# Exemplo de como usar para ler as instâncias do seu diretório:
-# (Certifique-se de que este script Python está em um local onde pode acessar o caminho ou ajuste o caminho)
-# target_directory = "/home/sylvino/Downloads/kpf_soco_instances/O/500"
-# all_instances_in_O_500 = load_instances_from_directory(target_directory)
-
-# if all_instances_in_O_500:
-#     print(f"\nTotal de {len(all_instances_in_O_500)} instâncias carregadas.")
-#     # Para ver os dados da primeira instância carregada, por exemplo:
-#     # print("\nDados da primeira instância carregada:")
-#     # for key, value in all_instances_in_O_500[0].items():
-#     #     if key not in ['profits', 'weights', 'forfeit_costs_matrix']: # Evita imprimir listas grandes
-#     #         print(f"  {key}: {value}")
-#     #     elif key == 'forfeit_costs_matrix':
-#     #          print(f"  {key}: Matriz {len(value)}x{len(value[0]) if value else 0}")
-#     #     else:
-#     #         print(f"  {key}: Lista com {len(value)} elementos")
-# else:
-#     print("Nenhuma instância foi carregada.")
-
 def print_forfeit_pairs(instance_data):
     """
     Imprime os pares de itens que têm um custo de penalidade associado.
@@ -133,12 +114,6 @@ def print_forfeit_pairs(instance_data):
     
     if not found_penalties:
         print("  Nenhum par com penalidade encontrado nesta instância.")
-
-# Para usar esta função, você passaria os dados de uma instância lida:
-# Exemplo:
-# if all_instances_in_O_500:
-#     instance_to_inspect = all_instances_in_O_500[0]
-#     print_forfeit_pairs(instance_to_inspect)
 
 def calculate_solution_value(solution_indices, profits, forfeit_costs_matrix):
     """Calcula o lucro total, custo de penalidade e valor objetivo de uma solução."""

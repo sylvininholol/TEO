@@ -5,21 +5,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utilities import calculate_solution_value
 
-# (A função read_kpf_instance já foi definida anteriormente)
-# (A função calculate_solution_value já foi definida anteriormente no contexto do GRASP)
-# Se não estiver no mesmo escopo, copie-a para cá:
-# def calculate_solution_value(solution_indices, profits, forfeit_costs_matrix):
-#     """Calcula o lucro total, custo de penalidade e valor objetivo de uma solução."""
-#     current_profit = sum(profits[i] for i in solution_indices)
-#     current_forfeit_cost = 0
-#     for i in range(len(solution_indices)):
-#         for j in range(i + 1, len(solution_indices)):
-#             idx1 = solution_indices[i]
-#             idx2 = solution_indices[j]
-#             current_forfeit_cost += forfeit_costs_matrix[idx1][idx2]
-#     objective_value = current_profit - current_forfeit_cost
-#     return current_profit, current_forfeit_cost, objective_value
-
 def dynamic_value_greedy_heuristic_kpf(instance_data):
     """
     Implementa a Heurística Gulosa com Avaliação Dinâmica de Penalidades (DVGH)
