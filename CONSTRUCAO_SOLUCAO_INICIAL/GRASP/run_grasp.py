@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -28,7 +29,9 @@ if all_instances_in_O_500:
     # Opcional: Imprimir os pares de penalidade da instância (agora usando os dados frescos)
     # print_forfeit_pairs(instance_to_solve)
 
+    start = time.time()
     best_grasp_solution = run_grasp_kpf(instance_to_solve, alpha=ALPHA_GRASP, max_iter=MAX_ITER_GRASP)
+    end = time.time()
 
     # 3. Apresentar a solução inicial gerada pelo GRASP e suas métricas
     print("\n--- Melhor Solução Inicial Gerada pelo GRASP ---")
@@ -40,6 +43,7 @@ if all_instances_in_O_500:
         print(f"Custo Total de Penalidades: {best_grasp_solution['total_forfeit_cost']}")
         print(f"VALOR OBJETIVO (Lucro - Penalidades): {best_grasp_solution['objective_value']}")
         print(f"Iterações GRASP executadas: {best_grasp_solution['iterations_run']}")
+        print(f"Tempo decorrido: {end - start} segundos")
     else:
         print("Nenhuma solução viável foi encontrada pelo GRASP.")
 else:

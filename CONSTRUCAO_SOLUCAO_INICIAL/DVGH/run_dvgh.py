@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -25,7 +26,9 @@ if all_instances_in_O_500:
 
     # print_forfeit_pairs(fresh_instance_data_for_dvgh)
 
+    start = time.time()
     dvgh_solution = dynamic_value_greedy_heuristic_kpf(fresh_instance_data_for_dvgh)
+    end = time.time()
 
     print("\n--- Solução Gerada pela Heurística DVGH ---")
     if dvgh_solution and dvgh_solution['objective_value'] > -float('inf'): # Verifica se uma solução válida foi retornada
@@ -35,6 +38,7 @@ if all_instances_in_O_500:
         print(f"Lucro Total dos Itens: {dvgh_solution['total_profit']}")
         print(f"Custo Total de Penalidades: {dvgh_solution['total_forfeit_cost']}")
         print(f"VALOR OBJETIVO (Lucro - Penalidades): {dvgh_solution['objective_value']}")
+        print(f"Tempo decorrido: {end - start} segundos")
     else:
         print("Nenhuma solução viável foi encontrada pela DVGH.")
 else:

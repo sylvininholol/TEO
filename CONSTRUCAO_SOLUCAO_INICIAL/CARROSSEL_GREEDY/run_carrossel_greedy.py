@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -25,12 +26,14 @@ if all_instances_in_O_500:
     # Testar com 1.0 e 0.2
     # Testar com 2.0 e 0.8
 
+    start = time.time()
     carousel_solution = penalty_aware_carousel_kpf(
         fresh_instance_data_for_carousel,
         ALPHA_CAROUSEL,
         BETA_CAROUSEL,
         calculate_solution_value
     )
+    end = time.time()
 
     print("\n--- Solução Gerada pela Heurística Carrossel Guloso ---")
     if carousel_solution and carousel_solution['objective_value'] > -float('inf'):
@@ -41,5 +44,6 @@ if all_instances_in_O_500:
         print(f"Custo Total de Penalidades: {carousel_solution['total_forfeit_cost']}")
         print(f"VALOR OBJETIVO (Lucro - Penalidades): {carousel_solution['objective_value']}")
         print(f"Parâmetros usados: {carousel_solution['params']}")
+        print(f"Tempo decorrido: {end - start} segundos")
     else:
         print("Nenhuma solução viável foi encontrada pelo Carrossel Guloso.")
