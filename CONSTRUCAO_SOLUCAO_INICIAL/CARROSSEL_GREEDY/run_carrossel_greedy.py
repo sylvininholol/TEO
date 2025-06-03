@@ -11,18 +11,16 @@ target_directory = "/home/sylvino/Downloads/kpf_soco_instances/O/1000"
 all_instances_in_O_500 = load_instances_from_directory(target_directory)
 
 if all_instances_in_O_500:
-    instance_to_solve_carousel = all_instances_in_O_500[0] # Ou a instância desejada
-    
-    # "Reinicializa o arquivo" relendo-o do disco para garantir dados frescos
+    instance_to_solve_carousel = all_instances_in_O_500[0]
+
     print(f"\n\n--- Preparando para resolver com Carrossel Guloso ---")
     print(f"Re-lendo arquivo: {instance_to_solve_carousel['filepath']}")
     fresh_instance_data_for_carousel = read_kpf_instance(instance_to_solve_carousel['filepath'])
     
     print(f"\n--- Resolvendo instância com Carrossel Guloso: {fresh_instance_data_for_carousel['filepath']} ---")
 
-    # Parâmetros para o Carrossel Guloso (ajuste conforme necessário)
-    ALPHA_CAROUSEL = 2.0  # Ex: 1.0 significa que o número de giros é ~tamanho da solução gulosa inicial
-    BETA_CAROUSEL = 0.80   # Ex: 20% dos itens da solução gulosa formam a elite inicial
+    ALPHA_CAROUSEL = 1.0  # Ex: 1.0 significa que o número de giros é o tamanho da solução gulosa inicial
+    BETA_CAROUSEL = 0.2   # Ex: 20% dos itens da solução gulosa formam a elite inicial
 
     # Testar com 1.0 e 0.2
     # Testar com 2.0 e 0.8

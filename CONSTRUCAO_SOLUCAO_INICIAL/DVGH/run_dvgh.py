@@ -6,36 +6,27 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utilities import read_kpf_instance, load_instances_from_directory
 from dvgh import dynamic_value_greedy_heuristic_kpf
 
-# 1. Definir o caminho do diretório e carregar todas as instâncias
 target_directory = "/home/sylvino/Downloads/kpf_soco_instances/O/1000"
 # target_directory = "/home/sylvino/Faculdade/TEO/construcao_solucao_inicial/" # Testar instância
 
 all_instances_in_O_500 = load_instances_from_directory(target_directory)
 
-# Verifica se alguma instância foi carregada
 if all_instances_in_O_500:
-    # Exemplo: Processar a primeira instância da lista
-    # Você pode iterar sobre `all_instances_in_O_500` para processar cada uma.
     instance_reference_for_dvgh = all_instances_in_O_500[0]
     
-    # --- Execução da DVGH com "reinicialização do arquivo" ---
     print(f"\n\n--- Preparando para resolver com DVGH ---")
     print(f"Instância original (referência): {instance_reference_for_dvgh['filepath']}")
 
-    # "Reinicializa o arquivo" relendo-o do disco para garantir dados frescos para esta execução da DVGH
     print(f"Re-lendo arquivo para garantir dados frescos para DVGH: {instance_reference_for_dvgh['filepath']}")
     fresh_instance_data_for_dvgh = read_kpf_instance(instance_reference_for_dvgh['filepath'])
     
     print(f"\n--- Resolvendo instância com DVGH (dados frescos): {fresh_instance_data_for_dvgh['filepath']} ---")
     print(f"Número de itens: {fresh_instance_data_for_dvgh['num_items']}, Capacidade: {fresh_instance_data_for_dvgh['capacity']}, Número de pares com penalidade: {fresh_instance_data_for_dvgh['num_forfeits']}")
 
-    # Opcional: Imprimir os pares de penalidade da instância (agora usando os dados frescos)
     # print_forfeit_pairs(fresh_instance_data_for_dvgh)
 
-    # 2. Executar a DVGH na instância com dados frescos
     dvgh_solution = dynamic_value_greedy_heuristic_kpf(fresh_instance_data_for_dvgh)
 
-    # 3. Apresentar a solução gerada pela DVGH e suas métricas
     print("\n--- Solução Gerada pela Heurística DVGH ---")
     if dvgh_solution and dvgh_solution['objective_value'] > -float('inf'): # Verifica se uma solução válida foi retornada
         print(f"Itens Selecionados (índices): {dvgh_solution['selected_items_indices']}")

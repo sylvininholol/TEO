@@ -1,15 +1,9 @@
-# Adicione estas funções ao seu utilities.py ou ao script principal
-# Elas são baseadas na lógica da outra LLM, mas adaptadas.
 import collections
 import sys
 import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utilities import calculate_solution_value
-
-# Supondo que calculate_solution_value já está em utilities.py
-# from utilities import calculate_solution_value
 
 def _calculate_penalized_metric(item_idx, current_solution_set,
                                  profits, weights, forfeit_costs_matrix):
@@ -17,12 +11,12 @@ def _calculate_penalized_metric(item_idx, current_solution_set,
     Calcula a métrica (lucro_penalizado / peso) para um item,
     considerando penalidades com a solução atual.
     """
-    if item_idx < 0 or item_idx >= len(profits): # Checagem de índice
+    if item_idx < 0 or item_idx >= len(profits):
         return -sys.float_info.max
 
     penalized_profit = profits[item_idx]
     for sol_item_idx in current_solution_set:
-        if sol_item_idx < 0 or sol_item_idx >= len(profits): continue # Checagem de índice
+        if sol_item_idx < 0 or sol_item_idx >= len(profits): continue
         penalized_profit -= forfeit_costs_matrix[item_idx][sol_item_idx]
 
     if weights[item_idx] <= 0:
@@ -60,7 +54,7 @@ def select_best_penalized_item_to_add(available_items_set,
                 best_metric = metric
                 best_item_idx = item_idx
     
-    # Adiciona apenas se a melhor métrica for pelo menos não negativa (ou estritamente positiva)
+    # Adiciona apenas se a melhor métrica for não negativa
     if best_item_idx is not None and best_metric >= 0:
         return best_item_idx
     return None
@@ -107,7 +101,6 @@ def penalty_aware_carousel_kpf(instance_data, alpha, beta, calculate_solution_va
     forfeit_costs_matrix = instance_data['forfeit_costs_matrix']
 
     # 1. Solução Inicial (S_initial) - Usando o construtor guloso consciente de penalidades
-    #    Corresponde a `greedy_forfeits_fifo`
     S_initial = penalty_aware_greedy_constructor(num_items, capacity, profits, weights, forfeit_costs_matrix)
 
     if not S_initial: # Se a solução inicial penalizada for vazia
@@ -137,8 +130,7 @@ def penalty_aware_carousel_kpf(instance_data, alpha, beta, calculate_solution_va
     items_available_for_carousel = set(range(num_items)) - set(S_prime_deque)
 
     # 3. Loop do Carrossel
-    num_iterations = int(round(alpha * t)) # alpha * |S_initial| ao invés de |S_prime|
-                                          # para consistência com o pseudocódigo original do carrossel.
+    num_iterations = int(round(alpha * t)) 
 
     for _ in range(num_iterations):
         if not S_prime_deque:
@@ -149,9 +141,8 @@ def penalty_aware_carousel_kpf(instance_data, alpha, beta, calculate_solution_va
         items_available_for_carousel.add(item_removed) # Devolve para o pool de disponíveis
 
         # Seleciona novo item para adicionar (i_star_new)
-        # Corresponde a `greedy_forfeits_single`
         item_to_add_to_prime = select_best_penalized_item_to_add(
-            items_available_for_carousel, list(S_prime_deque), # Passa S_prime_deque atual para cálculo de penalidade
+            items_available_for_carousel, list(S_prime_deque),
             current_prime_weight, capacity,
             profits, weights, forfeit_costs_matrix
         )
@@ -160,10 +151,8 @@ def penalty_aware_carousel_kpf(instance_data, alpha, beta, calculate_solution_va
             S_prime_deque.append(item_to_add_to_prime)
             current_prime_weight += weights[item_to_add_to_prime]
             items_available_for_carousel.remove(item_to_add_to_prime)
-        # Se item_to_add_to_prime for None, S_prime_deque encolheu.
 
     # 4. Fase de Preenchimento Final (S_double_prime)
-    #    Corresponde a `greedy_forfeits_init`
     #    Pega S_prime_deque como está e tenta adicionar mais itens de items_available_for_carousel
     
     # Esta parte é essencialmente continuar o penalty_aware_greedy_constructor
@@ -203,7 +192,7 @@ def penalty_aware_carousel_kpf(instance_data, alpha, beta, calculate_solution_va
 
     return {
         'selected_items_indices': S_double_prime_indices,
-        'total_weight': current_weight_for_fill, # Peso final após o preenchimento
+        'total_weight': current_weight_for_fill,
         'total_profit': final_profit,
         'total_forfeit_cost': final_forfeit_cost,
         'objective_value': objective_value,

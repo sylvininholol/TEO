@@ -25,7 +25,6 @@ def grasp_kpf_construction(profits, weights, capacity, forfeit_costs_matrix, alp
     current_solution_indices = []
     current_weight = 0
     
-    # Itens disponíveis para seleção (índices)
     available_items = list(range(num_items))
     random.shuffle(available_items) # Embaralha para quebrar empates iniciais na métrica
 

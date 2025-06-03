@@ -1,4 +1,5 @@
 import random
+import os
 
 def generate_kpf_instance_content(
     num_items,
@@ -40,14 +41,10 @@ def generate_kpf_instance_content(
               f"Definindo num_forfeit_pairs para 0.")
         num_forfeit_pairs = 0
 
-    # Gerar lucros dos itens
     profits = [random.randint(profit_range[0], profit_range[1]) for _ in range(num_items)]
 
-    # Gerar pesos dos itens (garantindo que sejam pelo menos 1)
     weights = [max(1, random.randint(weight_range[0], weight_range[1])) for _ in range(num_items)]
 
-    # Gerar pares de penalidade únicos
-    # Calcula o número máximo possível de pares únicos
     max_possible_pairs = 0
     if num_items >= 2:
         max_possible_pairs = num_items * (num_items - 1) // 2
@@ -61,15 +58,13 @@ def generate_kpf_instance_content(
     generated_pairs_set = set()
     forfeit_pairs_details = []
 
-    # Se num_items < 2, actual_num_forfeit_pairs será 0 e o loop não executará.
     while len(generated_pairs_set) < actual_num_forfeit_pairs:
         id1 = random.randint(0, num_items - 1)
         id2 = random.randint(0, num_items - 1)
         
         if id1 == id2:
-            continue # Os itens do par devem ser distintos
+            continue
         
-        # Forma canônica do par (menor índice primeiro) para checagem de unicidade
         pair = tuple(sorted((id1, id2)))
         
         if pair not in generated_pairs_set:
@@ -77,35 +72,26 @@ def generate_kpf_instance_content(
             cost = random.randint(forfeit_cost_range[0], forfeit_cost_range[1])
             forfeit_pairs_details.append({'id1': pair[0], 'id2': pair[1], 'cost': cost})
 
-    # Construir o conteúdo do arquivo
     output_lines = []
     
-    # Linha 1: nI nP kS
     output_lines.append(f"{num_items} {actual_num_forfeit_pairs} {knapsack_capacity}")
     
-    # Linha 2: Lucros dos itens
     output_lines.append(" ".join(map(str, profits)))
     
-    # Linha 3: Pesos dos itens
     output_lines.append(" ".join(map(str, weights)))
     
-    # Linhas restantes: Pares de penalidade
     for detail in forfeit_pairs_details:
-        # nA_i (sempre 1) fC_i nI_i (sempre 2)
         output_lines.append(f"1 {detail['cost']} 2")
-        # id_i_0 id_i_1
+
         output_lines.append(f"{detail['id1']} {detail['id2']}")
         
     return "\n".join(output_lines)
 
-# --- Exemplo de como usar a função ---
 if __name__ == "__main__":
-    # Parâmetros para a instância a ser gerada
     nI_desejado = 500
-    nP_desejado = 250
+    nP_desejado = 100
     kS_desejado = 750
 
-    # Gerar o conteúdo da instância
     conteudo_instancia = generate_kpf_instance_content(
         nI_desejado,
         nP_desejado,
@@ -113,13 +99,12 @@ if __name__ == "__main__":
     )
 
     if conteudo_instancia:
-        # Imprimir o conteúdo gerado (para visualização)
         print("\n--- Conteúdo da Instância Gerada ---")
         print(conteudo_instancia)
         print("-----------------------------------\n")
 
-        # Salvar o conteúdo em um arquivo .txt (opcional)
-        nome_arquivo = f"KPF_n{nI_desejado}_p{nP_desejado}_c{kS_desejado}.txt"
+        nome_arquivo = f"New Instances/KPF_n{nI_desejado}_p{nP_desejado}_c{kS_desejado}.txt"
+        os.makedirs("New Instances", exist_ok=True)
         try:
             with open(nome_arquivo, 'w') as f:
                 f.write(conteudo_instancia)
@@ -127,16 +112,14 @@ if __name__ == "__main__":
         except IOError as e:
             print(f"Erro ao salvar o arquivo {nome_arquivo}: {e}")
 
-    # Exemplo com poucos itens para facilitar a visualização dos pares
     conteudo_instancia_pequena = generate_kpf_instance_content(5, 7, 50)
     if conteudo_instancia_pequena:
         print("\n--- Conteúdo da Instância Pequena Gerada ---")
         print(conteudo_instancia_pequena)
         print("-----------------------------------------\n")
 
-    # Exemplo tentando gerar mais pares que o possível
-    conteudo_instancia_muitos_pares = generate_kpf_instance_content(4, 10, 50) # Maximo é 4*3/2 = 6 pares
+    conteudo_instancia_muitos_pares = generate_kpf_instance_content(4, 10, 50)
     if conteudo_instancia_muitos_pares:
         print("\n--- Conteúdo da Instância com Tentativa de Muitos Pares ---")
-        print(conteudo_instancia_muitos_pares) # Deve mostrar o aviso e limitar os pares
+        print(conteudo_instancia_muitos_pares)
         print("---------------------------------------------------------\n")
