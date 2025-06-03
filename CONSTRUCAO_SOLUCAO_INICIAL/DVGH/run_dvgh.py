@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from utilities import read_kpf_instance, load_instances_from_directory
 from dvgh import dynamic_value_greedy_heuristic_kpf
 
-target_directory = "/home/sylvino/Downloads/kpf_soco_instances/O/1000"
+target_directory = "/home/sylvino/Downloads/kpf_soco_instances/O/500"
 # target_directory = "/home/sylvino/Faculdade/TEO/construcao_solucao_inicial/" # Testar instância
 
 all_instances_in_O_500 = load_instances_from_directory(target_directory)

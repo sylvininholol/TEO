@@ -1,5 +1,4 @@
 import os
-import sys
 
 def read_kpf_instance(filepath):
     """
