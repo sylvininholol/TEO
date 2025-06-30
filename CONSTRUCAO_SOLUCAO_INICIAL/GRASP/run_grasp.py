@@ -10,7 +10,7 @@ from grasp import run_grasp_kpf
 
 # 1. Definir o caminho do diretório e carregar instâncias
 
-target_directory = "/home/sylvino/Downloads/kpf_soco_instances/O/500"
+target_directory = "C:/Users/gmota/Downloads/kpf_soco_instances/O/500"
 all_instances_in_O_500 = load_instances_from_directory(target_directory)
 
 if all_instances_in_O_500:
