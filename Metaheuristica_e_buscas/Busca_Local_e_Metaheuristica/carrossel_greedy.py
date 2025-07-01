@@ -4,7 +4,7 @@ import os
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utilities import calculate_solution_value
+from Construcao.utilities import calculate_solution_value
 
 def _calculate_penalized_metric(item_idx, current_solution_set,
                                  profits, weights, forfeit_costs_matrix):

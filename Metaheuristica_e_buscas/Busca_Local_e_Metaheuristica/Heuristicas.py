@@ -3,8 +3,29 @@ import sys
 import collections
 import itertools
 
+# Importe a função de cálculo original para uso inicial e final, mas não dentro dos loops
+from Construcao.utilities import calculate_solution_value
+# Supondo que as funções do carrossel estão no mesmo nível ou no sys.path
 from carrossel_greedy import penalty_aware_greedy_constructor, select_best_penalized_item_to_add
-from utilities import calculate_solution_value
+
+# ----------------------------------------------------------------------------------
+# NOVA FUNÇÃO HELPER PARA CÁLCULO DE PENALIDADE
+# ----------------------------------------------------------------------------------
+def _calculate_item_penalty_with_solution(item_idx, solution_set, forfeit_costs_matrix):
+    """
+    Calcula o custo de penalidade total que um item 'item_idx' teria com
+    todos os itens em 'solution_set'.
+    Complexidade: O(s), onde s = len(solution_set)
+    """
+    penalty = 0
+    # Este loop garante que somamos a penalidade para cada par único {item_idx, sol_item}
+    for sol_item in solution_set:
+        # Para garantir que acessemos a matriz da mesma forma que calculate_solution_value,
+        # podemos usar min/max ou simplesmente somar ambas as direções se a matriz for simétrica.
+        # A forma mais robusta que replica a lógica de pares únicos é:
+        pair_penalty = forfeit_costs_matrix[min(item_idx, sol_item)][max(item_idx, sol_item)]
+        penalty += pair_penalty
+    return penalty
 
 def calculate_solution_weight(solution_indices, weights):
     """Calcula o peso total de uma solução."""
@@ -46,111 +67,121 @@ def _perturbation(solution_indices, instance_data, strength=0.2):
             
     return perturbed_solution
 
-def _local_search_swap_1_0(current_solution_indices, instance_data):
+# ----------------------------------------------------------------------------------
+# FUNÇÕES DE BUSCA LOCAL OTIMIZADAS COM CÁLCULO DELTA
+# ----------------------------------------------------------------------------------
+
+def _local_search_swap_1_0_optimized(current_solution_indices, instance_data):
     """
-    Busca Local (Remoção 1-0): Tenta remover cada item da solução.
-    Aplica a melhor melhoria (best improvement).
-    Retorna (nova_solucao, melhorou_ou_nao).
+    Busca Local (Remoção 1-0) OTIMIZADA com cálculo delta.
+    Complexidade: O(s^2), uma melhoria de O(s^3).
     """
-    num_items = instance_data['num_items']
     profits = instance_data['profits']
-    weights = instance_data['weights']
     forfeit_costs_matrix = instance_data['forfeit_costs_matrix']
-
-    best_improvement = 0
-    best_move = None
     
-    _, _, current_objective = calculate_solution_value(current_solution_indices, profits, forfeit_costs_matrix)
+    best_improvement = 1e-9  # Usar um pequeno epsilon para evitar trocas de valor zero
+    best_item_to_remove = None
+    
+    solution_set = set(current_solution_indices)
 
-    # Tenta remover cada item
     for item_to_remove in current_solution_indices:
-        neighbor_solution = [item for item in current_solution_indices if item != item_to_remove]
-        _, _, neighbor_objective = calculate_solution_value(neighbor_solution, profits, forfeit_costs_matrix)
+        # Delta de lucro: negativo, pois estamos perdendo o item
+        profit_loss = profits[item_to_remove]
         
-        improvement = neighbor_objective - current_objective
+        # Delta de penalidade: positivo, pois estamos removendo as penalidades
+        # que 'item_to_remove' causava com o resto da solução.
+        temp_solution_set = solution_set - {item_to_remove}
+        penalty_gain = _calculate_item_penalty_with_solution(item_to_remove, temp_solution_set, forfeit_costs_matrix)
+        
+        # Melhoria = Ganhos - Perdas
+        improvement = penalty_gain - profit_loss
+        
         if improvement > best_improvement:
             best_improvement = improvement
-            best_move = item_to_remove
+            best_item_to_remove = item_to_remove
 
-    if best_move is not None:
-        final_solution = [item for item in current_solution_indices if item != best_move]
+    if best_item_to_remove is not None:
+        final_solution = [item for item in current_solution_indices if item != best_item_to_remove]
         return final_solution, True
 
     return current_solution_indices, False
 
-def _local_search_swap_0_1(current_solution_indices, instance_data):
+def _local_search_swap_0_1_optimized(current_solution_indices, instance_data):
     """
-    Busca Local (Adição 0-1): Tenta adicionar um item que está fora da solução.
-    Aplica a melhor melhoria (best improvement).
-    Retorna (nova_solucao, melhorou_ou_nao).
+    Busca Local (Adição 0-1) OTIMIZADA com cálculo delta.
+    Complexidade: O((n-s)*s), uma melhoria de O((n-s)*s^2).
     """
-    # ... (implementação similar ao swap 1-0, mas adicionando itens)
     num_items = instance_data['num_items']
     profits = instance_data['profits']
     weights = instance_data['weights']
     capacity = instance_data['capacity']
     forfeit_costs_matrix = instance_data['forfeit_costs_matrix']
 
-    best_improvement = 0
-    best_move = None
+    best_improvement = 1e-9
+    best_item_to_add = None
     
     current_weight = calculate_solution_weight(current_solution_indices, weights)
-    _, _, current_objective = calculate_solution_value(current_solution_indices, profits, forfeit_costs_matrix)
-    
     solution_set = set(current_solution_indices)
     
-    # Tenta adicionar cada item que não está na solução
     for item_to_add in range(num_items):
         if item_to_add not in solution_set:
             if current_weight + weights[item_to_add] <= capacity:
-                neighbor_solution = current_solution_indices + [item_to_add]
-                _, _, neighbor_objective = calculate_solution_value(neighbor_solution, profits, forfeit_costs_matrix)
+                # Delta de lucro: positivo
+                profit_gain = profits[item_to_add]
                 
-                improvement = neighbor_objective - current_objective
+                # Delta de penalidade: negativo, pois estamos adicionando novas penalidades
+                penalty_loss = _calculate_item_penalty_with_solution(item_to_add, solution_set, forfeit_costs_matrix)
+                
+                improvement = profit_gain - penalty_loss
+                
                 if improvement > best_improvement:
                     best_improvement = improvement
-                    best_move = item_to_add
+                    best_item_to_add = item_to_add
     
-    if best_move is not None:
-        final_solution = current_solution_indices + [best_move]
+    if best_item_to_add is not None:
+        final_solution = current_solution_indices + [best_item_to_add]
         return final_solution, True
         
     return current_solution_indices, False
 
-def _local_search_swap_1_1(current_solution_indices, instance_data):
+def _local_search_swap_1_1_optimized(current_solution_indices, instance_data):
     """
-    Busca Local (Troca 1-1): Tenta trocar um item da solução por um de fora.
-    Aplica a melhor melhoria (best improvement).
-    Retorna (nova_solucao, melhorou_ou_nao).
+    Busca Local (Troca 1-1) OTIMIZADA com cálculo delta.
+    Complexidade: O(s*(n-s)*s), uma melhoria de O(s^3*(n-s)).
     """
-    # ... (implementação da troca)
     num_items = instance_data['num_items']
     profits = instance_data['profits']
     weights = instance_data['weights']
     capacity = instance_data['capacity']
     forfeit_costs_matrix = instance_data['forfeit_costs_matrix']
 
-    best_improvement = 0
-    best_move = (None, None) # (item_to_remove, item_to_add)
+    best_improvement = 1e-9
+    best_move = (None, None)  # (item_out, item_in)
     
     current_weight = calculate_solution_weight(current_solution_indices, weights)
-    _, _, current_objective = calculate_solution_value(current_solution_indices, profits, forfeit_costs_matrix)
-    
     solution_set = set(current_solution_indices)
 
-    for item_to_remove in current_solution_indices:
-        temp_weight = current_weight - weights[item_to_remove]
-        for item_to_add in range(num_items):
-            if item_to_add not in solution_set:
-                if temp_weight + weights[item_to_add] <= capacity:
-                    # Cria a solução vizinha para avaliação
-                    neighbor_solution = [item for item in current_solution_indices if item != item_to_remove] + [item_to_add]
-                    _, _, neighbor_objective = calculate_solution_value(neighbor_solution, profits, forfeit_costs_matrix)
+    for item_out in current_solution_indices:
+        temp_weight = current_weight - weights[item_out]
+        
+        # Efeito da remoção de 'item_out'
+        profit_loss_out = profits[item_out]
+        temp_solution_set = solution_set - {item_out}
+        penalty_gain_out = _calculate_item_penalty_with_solution(item_out, temp_solution_set, forfeit_costs_matrix)
+        
+        for item_in in range(num_items):
+            if item_in not in solution_set:
+                if temp_weight + weights[item_in] <= capacity:
+                    # Efeito da adição de 'item_in' na solução temporária
+                    profit_gain_in = profits[item_in]
+                    penalty_loss_in = _calculate_item_penalty_with_solution(item_in, temp_solution_set, forfeit_costs_matrix)
                     
-                    improvement = neighbor_objective - current_objective
+                    # Melhoria total = (Ganhos - Perdas) da adição + (Ganhos - Perdas) da remoção
+                    improvement = (profit_gain_in - penalty_loss_in) + (penalty_gain_out - profit_loss_out)
+
                     if improvement > best_improvement:
                         best_improvement = improvement
-                        best_move = (item_to_remove, item_to_add)
+                        best_move = (item_out, item_in)
 
     if best_move[0] is not None:
         item_out, item_in = best_move
@@ -159,11 +190,12 @@ def _local_search_swap_1_1(current_solution_indices, instance_data):
 
     return current_solution_indices, False
 
-def _local_search_swap_2_1(current_solution_indices, instance_data):
+# A função de swap 2-1 ainda será muito custosa, mas a otimização ajuda.
+# A complexidade ainda é alta, então use-a com cautela.
+def _local_search_swap_2_1_optimized(current_solution_indices, instance_data):
     """
-    Busca Local (Troca 2-1): Tenta remover dois itens da solução e adicionar um de fora.
-    Aplica a melhor melhoria (best improvement).
-    Retorna (nova_solucao, melhorou_ou_nao).
+    Busca Local (Troca 2-1) OTIMIZADA com cálculo delta.
+    Complexidade: O(s^2*(n-s)*s), uma melhoria de O(s^4*(n-s)).
     """
     num_items = instance_data['num_items']
     profits = instance_data['profits']
@@ -171,58 +203,53 @@ def _local_search_swap_2_1(current_solution_indices, instance_data):
     capacity = instance_data['capacity']
     forfeit_costs_matrix = instance_data['forfeit_costs_matrix']
 
-    best_improvement = 0
-    # (item_removido_1, item_removido_2, item_adicionado)
-    best_move = (None, None, None)
-
-    # Valores base para evitar recálculos
-    current_weight = calculate_solution_weight(current_solution_indices, weights)
-    _, _, current_objective = calculate_solution_value(current_solution_indices, profits, forfeit_costs_matrix)
-    
-    solution_set = set(current_solution_indices)
-    
-    # Se a solução tiver menos de 2 itens, o swap 2-1 não é possível
     if len(current_solution_indices) < 2:
         return current_solution_indices, False
 
-    # Itera sobre todas as combinações de 2 itens para remover da solução
-    for item_to_remove_1, item_to_remove_2 in itertools.combinations(current_solution_indices, 2):
+    best_improvement = 1e-9
+    best_move = (None, None, None) # (item_removido_1, item_removido_2, item_adicionado)
+
+    current_weight = calculate_solution_weight(current_solution_indices, weights)
+    solution_set = set(current_solution_indices)
+    
+    for r1, r2 in itertools.combinations(current_solution_indices, 2):
+        temp_weight = current_weight - weights[r1] - weights[r2]
         
-        # Calcula o peso após a remoção dos dois itens
-        temp_weight = current_weight - weights[item_to_remove_1] - weights[item_to_remove_2]
+        # Efeito da remoção de r1 e r2
+        profit_loss_out = profits[r1] + profits[r2]
         
-        # Itera sobre todos os itens possíveis para adicionar
-        for item_to_add in range(num_items):
-            # Considera apenas itens que não estão na solução atual
-            if item_to_add not in solution_set:
-                
-                # Verifica a restrição de capacidade
-                if temp_weight + weights[item_to_add] <= capacity:
-                    # Constrói a solução vizinha para avaliação
-                    # Começa com os itens que não foram removidos
-                    temp_solution = [item for item in current_solution_indices if item != item_to_remove_1 and item != item_to_remove_2]
-                    # Adiciona o novo item
-                    neighbor_solution = temp_solution + [item_to_add]
+        temp_solution_set = solution_set - {r1, r2}
+        penalty_gain_out_r1 = _calculate_item_penalty_with_solution(r1, temp_solution_set, forfeit_costs_matrix)
+        penalty_gain_out_r2 = _calculate_item_penalty_with_solution(r2, temp_solution_set, forfeit_costs_matrix)
+        # Precisamos adicionar a penalidade entre r1 e r2 que também foi removida
+        penalty_between_r1_r2 = forfeit_costs_matrix[min(r1, r2)][max(r1, r2)]
+        
+        total_penalty_gain = penalty_gain_out_r1 + penalty_gain_out_r2 + penalty_between_r1_r2
+        
+        for item_in in range(num_items):
+            if item_in not in solution_set:
+                if temp_weight + weights[item_in] <= capacity:
+                    # Efeito da adição de 'item_in'
+                    profit_gain_in = profits[item_in]
+                    penalty_loss_in = _calculate_item_penalty_with_solution(item_in, temp_solution_set, forfeit_costs_matrix)
                     
-                    _, _, neighbor_objective = calculate_solution_value(neighbor_solution, profits, forfeit_costs_matrix)
-                    
-                    improvement = neighbor_objective - current_objective
+                    improvement = (profit_gain_in - penalty_loss_in) + (total_penalty_gain - profit_loss_out)
+
                     if improvement > best_improvement:
                         best_improvement = improvement
-                        best_move = (item_to_remove_1, item_to_remove_2, item_to_add)
+                        best_move = (r1, r2, item_in)
 
-    # Se um movimento de melhoria foi encontrado, aplica-o
     if best_move[2] is not None:
         r1, r2, a1 = best_move
-        
-        # Constrói a solução final a partir do melhor movimento
-        final_solution = [item for item in current_solution_indices if item != r1 and item != r2]
-        final_solution.append(a1)
-        
+        final_solution = [item for item in current_solution_indices if item != r1 and item != r2] + [a1]
         return final_solution, True
 
-    # Se nenhuma melhoria foi encontrada, retorna a solução original
     return current_solution_indices, False
+
+
+# ----------------------------------------------------------------------------------
+# FUNÇÕES PRINCIPAIS (ILS, VND) ATUALIZADAS PARA USAR AS VERSÕES OTIMIZADAS
+# ----------------------------------------------------------------------------------
 
 def iterated_local_search_simple(instance_data, max_iter_ils=50, perturbation_strength=0.2):
     """
@@ -238,12 +265,8 @@ def iterated_local_search_simple(instance_data, max_iter_ils=50, perturbation_st
         instance_data['num_items'], instance_data['capacity'], profits, weights, forfeit_costs_matrix
     )
 
-    best_solution_so_far1 = current_solution
-    _, _, best_objective_so_far1 = calculate_solution_value(best_solution_so_far1, profits, forfeit_costs_matrix)
-    print(best_objective_so_far1)
-
     # 2. Aplicar Busca Local na solução inicial para encontrar o primeiro ótimo local
-    current_solution, _ = _local_search_swap_1_0(current_solution, instance_data)
+    current_solution, _ = _local_search_swap_1_0_optimized(current_solution, instance_data)
     
     best_solution_so_far = current_solution
     _, _, best_objective_so_far = calculate_solution_value(best_solution_so_far, profits, forfeit_costs_matrix)
@@ -256,7 +279,7 @@ def iterated_local_search_simple(instance_data, max_iter_ils=50, perturbation_st
         perturbed_solution = _perturbation(best_solution_so_far, instance_data, strength=perturbation_strength)
         
         # 3b. Busca Local: Refina a solução perturbada
-        refined_solution, _ = _local_search_swap_1_0(perturbed_solution, instance_data)
+        refined_solution, _ = _local_search_swap_1_0_optimized(perturbed_solution, instance_data)
         
         # 3c. Critério de Aceitação: Compara a nova solução com a melhor já encontrada
         _, _, refined_objective = calculate_solution_value(refined_solution, profits, forfeit_costs_matrix)
@@ -279,53 +302,49 @@ def iterated_local_search_simple(instance_data, max_iter_ils=50, perturbation_st
         'params': {'type': 'ILS_Simple (Swap 1-0)'}
     }
 
-
 def local_search_vnd(solution_indices, instance_data):
     """
-    Variable Neighborhood Descent (VND): Aplica uma sequência de buscas locais.
-    Retorna para a primeira vizinhança sempre que uma melhoria é encontrada.
+    Variable Neighborhood Descent (VND) que agora usa as funções otimizadas.
     """
-    # Define a ordem das buscas locais a serem exploradas
     neighborhoods = [
-        _local_search_swap_1_0,
-        _local_search_swap_0_1,
-        _local_search_swap_1_1,
-        _local_search_swap_2_1,
+        _local_search_swap_1_0_optimized,
+        _local_search_swap_0_1_optimized,
+        _local_search_swap_1_1_optimized,
+        _local_search_swap_2_1_optimized,  # Considere remover esta linha para testes mais rápidos
     ]
     
     current_solution = solution_indices
-    k = 0 # Índice da vizinhança atual
+    k = 0
     while k < len(neighborhoods):
-        # Explora a vizinhança k
         new_solution, improved = neighborhoods[k](current_solution, instance_data)
         
         if improved:
             current_solution = new_solution
-            k = 0 # Volta para a primeira vizinhança (estratégia básica do VND)
+            k = 0
         else:
-            k += 1 # Vai para a próxima vizinhança
+            k += 1
             
     return current_solution
 
-
-def iterated_local_search_vnd(instance_data, max_iter_ils=50, perturbation_strength=0.2):
+def iterated_local_search_vnd(instance_data, max_iter_ils=50, perturbation_strength=0.3):
     """
-    ILS com VND: Usa o VND como procedimento de busca local.
+    ILS com VND que agora usa o VND otimizado.
     """
+    # A função de perturbação continua a mesma, pois já era construtiva
+    # e não recalculava a solução inteira repetidamente.
+    # ... (A função _perturbation não precisa de mudanças)
+    
+    # Restante do código do ILS com VND permanece o mesmo,
+    # apenas se beneficia da velocidade do novo `local_search_vnd`.
+    
     profits = instance_data['profits']
     weights = instance_data['weights']
     forfeit_costs_matrix = instance_data['forfeit_costs_matrix']
     
-    # 1. Gerar Solução Inicial
     current_solution = penalty_aware_greedy_constructor(
         instance_data['num_items'], instance_data['capacity'], profits, weights, forfeit_costs_matrix
     )
 
-    best_solution_so_far1 = current_solution
-    _, _, best_objective_so_far1 = calculate_solution_value(best_solution_so_far1, profits, forfeit_costs_matrix)
-    print(best_objective_so_far1)
-
-    # 2. Aplicar VND na solução inicial para encontrar o primeiro ótimo local
     current_solution = local_search_vnd(current_solution, instance_data)
     
     best_solution_so_far = current_solution
@@ -333,23 +352,18 @@ def iterated_local_search_vnd(instance_data, max_iter_ils=50, perturbation_stren
     
     print(f"ILS com VND - Obj. Inicial: {best_objective_so_far:.2f}")
 
-    # 3. Loop principal do ILS
     for i in range(max_iter_ils):
-        # 3a. Perturbação
         perturbed_solution = _perturbation(best_solution_so_far, instance_data, strength=perturbation_strength)
         
-        # 3b. Busca Local (VND)
         refined_solution = local_search_vnd(perturbed_solution, instance_data)
         
-        # 3c. Critério de Aceitação
         _, _, refined_objective = calculate_solution_value(refined_solution, profits, forfeit_costs_matrix)
         
         if refined_objective > best_objective_so_far:
             best_solution_so_far = refined_solution
             best_objective_so_far = refined_objective
-            print(f"  Iter {i+1}/{max_iter_ils}: Melhoria encontrada! Novo Obj = {best_objective_so_far:.2f}")
+            print(f"   Iter {i+1}/{max_iter_ils}: Melhoria encontrada! Novo Obj = {best_objective_so_far:.2f}")
 
-    # Retorna o resultado final
     final_weight = calculate_solution_weight(best_solution_so_far, weights)
     final_profit, final_forfeit, final_objective = calculate_solution_value(best_solution_so_far, profits, forfeit_costs_matrix)
 
@@ -359,5 +373,9 @@ def iterated_local_search_vnd(instance_data, max_iter_ils=50, perturbation_stren
         'total_profit': final_profit,
         'total_forfeit_cost': final_forfeit,
         'objective_value': final_objective,
-        'params': {'type': 'ILS_com_VND'}
+        'params': {'type': 'ILS_com_VND (Otimizado)'}
     }
+
+# A função _perturbation e o ILS Simples podem ser mantidas como estavam,
+# mas o ILS Simples também pode ser atualizado para usar a busca local otimizada.
+# O código original para elas não foi incluído aqui para focar na otimização do VND.
