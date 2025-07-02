@@ -6,7 +6,7 @@ import itertools
 # Importe a função de cálculo original para uso inicial e final, mas não dentro dos loops
 from Construcao.utilities import calculate_solution_value
 # Supondo que as funções do carrossel estão no mesmo nível ou no sys.path
-from carrossel_greedy import penalty_aware_greedy_constructor, select_best_penalized_item_to_add
+from Metaheuristica_e_buscas.Busca_Local_e_Metaheuristica.carrossel_greedy import penalty_aware_greedy_constructor, select_best_penalized_item_to_add
 
 # ----------------------------------------------------------------------------------
 # NOVA FUNÇÃO HELPER PARA CÁLCULO DE PENALIDADE

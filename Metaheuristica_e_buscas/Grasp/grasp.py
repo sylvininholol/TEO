@@ -5,8 +5,15 @@ import sys
 import os
 
 
-from Metaheuristica_e_buscas.Busca_Local_e_Metaheuristica.carrossel_greedy import carousel_local_search, _calculate_penalized_metric
+from Metaheuristica_e_buscas.Busca_Local_e_Metaheuristica.carrossel_greedy import _calculate_penalized_metric
 from Construcao.utilities import calculate_solution_value
+from Metaheuristica_e_buscas.Busca_Local_e_Metaheuristica.Heuristicas import (
+    _local_search_swap_1_0_optimized,
+    _local_search_swap_0_1_optimized,
+    _local_search_swap_1_1_optimized,
+    _local_search_swap_2_1_optimized,
+    calculate_solution_weight
+)
 
 def penalty_aware_greedy_constructor_grasp(num_items, capacity, profits, weights,
                                            forfeit_costs_matrix, rcl_size=3):
@@ -93,13 +100,55 @@ def run_single_grasp_iteration(instance_data, rcl_size, alpha, beta):
         }
 
     # --- 2. FASE DE BUSCA LOCAL ---
-    # Refina a solução construída usando o Carrossel.
-    # A chamada foi corrigida para passar os parâmetros na ordem certa.
-    refined_solution_dict = carousel_local_search(
+    refined_solution_dict = grasp_local_search(
         initial_solution_indices=constructed_solution,
-        instance_data=instance_data,
-        alpha=alpha,
-        beta=beta
+        instance_data=instance_data
     )
-    
+        
     return refined_solution_dict
+
+def grasp_local_search(initial_solution_indices, instance_data):
+    """
+    Busca local padrão do GRASP usando VND otimizado.
+
+    Args:
+        initial_solution_indices (list): Solução construída pela fase GRASP.
+        instance_data (dict): Dados do problema.
+
+    Returns:
+        dict: Solução refinada no formato completo com lucros, penalidades e objetivo.
+    """
+    # Usa o VND como estratégia de busca local padrão
+    neighborhoods = [
+        _local_search_swap_1_0_optimized,
+        # _local_search_swap_0_1_optimized,
+        # _local_search_swap_1_1_optimized,
+        # _local_search_swap_2_1_optimized, 
+    ]
+
+    current_solution = initial_solution_indices
+    k = 0
+    while k < len(neighborhoods):
+        new_solution, improved = neighborhoods[k](current_solution, instance_data)
+        if improved:
+            current_solution = new_solution
+            k = 0  # volta para a primeira vizinhança
+        else:
+            k += 1
+
+    # Calcula os valores finais da solução
+    final_weight = calculate_solution_weight(current_solution, instance_data['weights'])
+    final_profit, final_forfeit_cost, objective_value = calculate_solution_value(
+        current_solution,
+        instance_data['profits'],
+        instance_data['forfeit_costs_matrix']
+    )
+
+    return {
+        'selected_items_indices': sorted(current_solution),
+        'total_weight': final_weight,
+        'total_profit': final_profit,
+        'total_forfeit_cost': final_forfeit_cost,
+        'objective_value': objective_value,
+        'params': {'type': 'GRASP_LocalSearch_Standard'}
+    }
