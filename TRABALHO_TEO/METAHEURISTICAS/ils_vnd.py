@@ -7,7 +7,6 @@ from busca_local import (
     
 )
 from utilities import calculate_solution_value,_perturbation, calculate_solution_weight
-from CARROSSEL.build_carrosel import penalty_aware_greedy_constructor
 
 def local_search_vnd(solution_indices, instance_data):
     """
@@ -34,7 +33,7 @@ def local_search_vnd(solution_indices, instance_data):
             
     return current_solution
 
-def iterated_local_search_vnd(instance_data, max_iter_ils=50, perturbation_strength=0.3):
+def iterated_local_search_vnd(initial_solution, instance_data, max_iter_ils=50, perturbation_strength=0.3):
     """
     ILS com VND que agora usa o VND otimizado.
     """
@@ -49,11 +48,8 @@ def iterated_local_search_vnd(instance_data, max_iter_ils=50, perturbation_stren
     weights = instance_data['weights']
     forfeit_costs_matrix = instance_data['forfeit_costs_matrix']
     
-    current_solution = penalty_aware_greedy_constructor(
-        instance_data['num_items'], instance_data['capacity'], profits, weights, forfeit_costs_matrix
-    )
-
-    current_solution = local_search_vnd(current_solution, instance_data)
+    #Busca local
+    current_solution = local_search_vnd(initial_solution['selected_items_indices'], instance_data)
     
     best_solution_so_far = current_solution
     _, _, best_objective_so_far = calculate_solution_value(best_solution_so_far, profits, forfeit_costs_matrix)

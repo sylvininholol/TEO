@@ -6,6 +6,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utilities import load_instances_from_directory, read_kpf_instance
 from dvgh import dynamic_value_greedy_heuristic_kpf
+from METAHEURISTICAS.ils import iterated_local_search_simple
+from METAHEURISTICAS.ils_vnd import iterated_local_search_vnd
 
 target_directory = "C:/Users/gmota/Downloads/kpf_soco_instances/O/500"
 # target_directory = "/home/sylvino/Faculdade/TEO/construcao_solucao_inicial/" # Testar instância
@@ -41,5 +43,44 @@ if all_instances_in_O_500:
         print(f"Tempo decorrido: {end - start} segundos")
     else:
         print("Nenhuma solução viável foi encontrada pela DVGH.")
+
+    # ------------------------------------------------------------------------------------------------------------------------------------------------
+    start = time.time()
+    print("Executando ILS Simples (apenas com swap 1-0)")
+    print("="*50)
+    result_simple = iterated_local_search_simple(dvgh_solution, fresh_instance_data_for_dvgh, max_iter_ils=50, perturbation_strength=0.3)
+    end = time.time()
+
+    # --- Impressão dos Resultados Finais ---
+    print("\n--- Resultado Final (ILS Simples) ---")
+    print(f"Itens Selecionados (índices): {result_simple['selected_items_indices']}")
+    print(f"Número de Itens Selecionados: {len(result_simple['selected_items_indices'])}")
+    print(f"Peso Total: {result_simple['total_weight']} (Capacidade: {fresh_instance_data_for_dvgh['capacity']})")
+    print(f"Lucro Total dos Itens: {result_simple['total_profit']:.2f}")
+    print(f"Custo Total de Penalidades: {result_simple['total_forfeit_cost']:.2f}")
+    print(f"VALOR OBJETIVO (Lucro - Penalidades): {result_simple['objective_value']:.2f}")
+    print(f"Tempo decorrido: {end - start} segundos")
+    print("\n" + "="*50)
+
+    # ------------------------------------------------------------------------------------------------------------------------------------------------
+    start = time.time()
+    print("Executando ILS com VND (swaps 1-0, 0-1, 1-1, 2-1)")
+    print("="*50)
+    result_vnd = iterated_local_search_vnd(dvgh_solution, fresh_instance_data_for_dvgh, max_iter_ils=50, perturbation_strength=0.3)
+    end = time.time()
+
+    # --- Impressão dos Resultados Finais ---
+    print("\n--- Resultado Final (ILS com VND) ---")
+    print(f"Itens Selecionados (índices): {result_vnd['selected_items_indices']}")
+    print(f"Número de Itens Selecionados: {len(result_vnd['selected_items_indices'])}")
+    print(f"Peso Total: {result_vnd['total_weight']} (Capacidade: {fresh_instance_data_for_dvgh['capacity']})")
+    print(f"Lucro Total dos Itens: {result_vnd['total_profit']:.2f}")
+    print(f"Custo Total de Penalidades: {result_vnd['total_forfeit_cost']:.2f}")
+    print(f"VALOR OBJETIVO (Lucro - Penalidades): {result_vnd['objective_value']:.2f}")
+    print(f"Tempo decorrido: {end - start} segundos")
+    print("\n" + "="*50)
+    
+
+
 else:
     print(f"Nenhuma instância carregada do diretório '{target_directory}'. Verifique o caminho ou o conteúdo do diretório.")

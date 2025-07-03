@@ -75,7 +75,7 @@ if all_instances_in_O_500:
     start = time.time()
     print("Executando ILS Simples (apenas com swap 1-0)")
     print("="*50)
-    result_simple = iterated_local_search_simple(fresh_instance_data_for_carousel, max_iter_ils=50, perturbation_strength=0.3)
+    result_simple = iterated_local_search_simple(carousel_solution, fresh_instance_data_for_carousel, max_iter_ils=50, perturbation_strength=0.3)
     end = time.time()
 
     # --- Impressão dos Resultados Finais ---
@@ -94,7 +94,7 @@ if all_instances_in_O_500:
     start = time.time()
     print("Executando ILS com VND (swaps 1-0, 0-1, 1-1, 2-1)")
     print("="*50)
-    result_vnd = iterated_local_search_vnd(fresh_instance_data_for_carousel, max_iter_ils=50, perturbation_strength=0.3)
+    result_vnd = iterated_local_search_vnd(carousel_solution, fresh_instance_data_for_carousel, max_iter_ils=50, perturbation_strength=0.3)
     end = time.time()
 
     # --- Impressão dos Resultados Finais ---

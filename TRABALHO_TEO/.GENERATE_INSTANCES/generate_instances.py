@@ -103,8 +103,8 @@ if __name__ == "__main__":
         print(conteudo_instancia)
         print("-----------------------------------\n")
 
-        nome_arquivo = f"New Instances/KPF_n{nI_desejado}_p{nP_desejado}_c{kS_desejado}.txt"
-        os.makedirs("New Instances", exist_ok=True)
+        nome_arquivo = f"TRABALHO_TEO/.New Instances/KPF_n{nI_desejado}_p{nP_desejado}_c{kS_desejado}.txt"
+        os.makedirs("TRABALHO_TEO/.New Instances", exist_ok=True)
         try:
             with open(nome_arquivo, 'w') as f:
                 f.write(conteudo_instancia)

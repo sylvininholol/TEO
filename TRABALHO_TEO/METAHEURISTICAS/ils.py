@@ -1,8 +1,7 @@
 from busca_local import _local_search_swap_1_0_optimized
 from utilities import calculate_solution_value, calculate_solution_weight, _perturbation
-from CARROSSEL.build_carrosel import penalty_aware_greedy_constructor
 
-def iterated_local_search_simple(instance_data, max_iter_ils=50, perturbation_strength=0.2):
+def iterated_local_search_simple(initial_solution, instance_data, max_iter_ils=50, perturbation_strength=0.2):
     """
     ILS Simples: Usa apenas a busca local de remoção (swap 1-0).
     """
@@ -11,13 +10,11 @@ def iterated_local_search_simple(instance_data, max_iter_ils=50, perturbation_st
     forfeit_costs_matrix = instance_data['forfeit_costs_matrix']
     
     # 1. Gerar Solução Inicial (usando seu carrossel, se desejado, ou um construtor mais simples)
-    #    Para o ILS, uma construção gulosa simples já é um bom ponto de partida.
-    current_solution = penalty_aware_greedy_constructor(
-        instance_data['num_items'], instance_data['capacity'], profits, weights, forfeit_costs_matrix
-    )
+    # A solução inicial é dada por initial_solution.
+    # Para o ILS, uma construção gulosa simples já é um bom ponto de partida.
 
     # 2. Aplicar Busca Local na solução inicial para encontrar o primeiro ótimo local
-    current_solution, _ = _local_search_swap_1_0_optimized(current_solution, instance_data)
+    current_solution, _ = _local_search_swap_1_0_optimized(initial_solution['selected_items_indices'], instance_data)
     
     best_solution_so_far = current_solution
     _, _, best_objective_so_far = calculate_solution_value(best_solution_so_far, profits, forfeit_costs_matrix)
