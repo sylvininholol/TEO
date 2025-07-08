@@ -17,6 +17,8 @@ target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 all_instances_in_O_500 = load_instances_from_directory(target_directory)
 
 if all_instances_in_O_500:
+
+    #Troque o valor dentro dos colchetes para alterar o arquivo acessado
     instance_to_solve_carousel = all_instances_in_O_500[9]
 
     print(f"\n\n--- Preparando para resolver com Carrossel Guloso ---")

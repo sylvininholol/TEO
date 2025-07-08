@@ -45,5 +45,5 @@ def vnd(solution_indices, instance_data):
         'total_profit': final_profit,
         'total_forfeit_cost': final_forfeit_cost,
         'objective_value': objective_value,
-        'params': {'type': 'GRASP_LocalSearch_Standard'}
+        'params': {'type': 'VND'}
     }

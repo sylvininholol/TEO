@@ -11,12 +11,14 @@ from METAHEURISTICAS.vnd import vnd
 from METAHEURISTICAS.ils_vnd import iterated_local_search_vnd
 
 # Mude aqui para testar outras instâncias
-target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.New Instances', 'O', '500'))
+target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.New Instances', 'O', '1000'))
 
 all_instances_in_O_500 = load_instances_from_directory(target_directory)
 
 if all_instances_in_O_500:
-    instance_reference_for_dvgh = all_instances_in_O_500[7]
+
+    #Troque o valor dentro dos colchetes para alterar o arquivo acessado
+    instance_reference_for_dvgh = all_instances_in_O_500[0]
     
     print(f"\n\n--- Preparando para resolver com DVGH ---")
     print(f"Instância original (referência): {instance_reference_for_dvgh['filepath']}")

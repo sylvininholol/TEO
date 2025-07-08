@@ -17,11 +17,13 @@ BETA_CAROUSEL = 0.3             # Parâmetro beta para a busca local
 # --- Carregamento da Instância ---
 
 # Mude aqui para testar outras instâncias
-target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.New Instances', 'O', '500'))
+target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.New Instances', 'O', '700'))
 all_instances_in_O_500 = load_instances_from_directory(target_directory)
 
 if all_instances_in_O_500:
-    instance_to_solve_grasp = all_instances_in_O_500[0]
+
+    #Troque o valor dentro dos colchetes para alterar o arquivo acessado
+    instance_to_solve_grasp = all_instances_in_O_500[1]
 
     print(f"\n\n--- Preparando para resolver com Carrossel Guloso ---")
     print(f"Re-lendo arquivo: {instance_to_solve_grasp['filepath']}")
