@@ -2,29 +2,54 @@ import sys
 import os
 import time
 
+# Adiciona o diretório pai ao path para encontrar a pasta 'utilities' e 'METAHEURISTICAS'
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utilities import read_kpf_instance, load_instances_from_directory
-from build_carrosel import penalty_aware_greedy_construction
-from local_carrossel import carousel_local_search
-from METAHEURISTICAS.ils import iterated_local_search_simple
-from METAHEURISTICAS.vnd import vnd
-from METAHEURISTICAS.ils_vnd import iterated_local_search_vnd
-#from HeuristicaComBrake import iterated_local_search_simple,iterated_local_search_vnd
+# Tenta fazer as importações necessárias
+try:
+    from utilities import read_kpf_instance
+    from build_carrosel import penalty_aware_greedy_construction
+    from local_carrossel import carousel_local_search
+    from METAHEURISTICAS.ils import iterated_local_search_simple
+    from METAHEURISTICAS.vnd import vnd
+    from METAHEURISTICAS.ils_vnd import iterated_local_search_vnd
+except ImportError as e:
+    print(f"ERRO DE IMPORTAÇÃO: {e}")
+    print("Verifique se a estrutura de pastas está correta.")
+    print("A estrutura esperada é que as pastas 'utilities' e 'METAHEURISTICAS' estejam no mesmo nível que a pasta 'CARROSSEL'.")
+    sys.exit(1)
 
-# Mude aqui para testar outras instâncias
-target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.New Instances', 'O', '500'))
-all_instances_in_O_500 = load_instances_from_directory(target_directory)
+# --- INÍCIO DA SEÇÃO CORRIGIDA ---
+# Removemos a lógica antiga e a substituímos por uma que lê o argumento da linha de comando.
 
-if all_instances_in_O_500:
+# 1. Verifica se o caminho do arquivo foi passado como argumento
+if len(sys.argv) < 2:
+    print("Erro: Forneça o caminho para o arquivo da instância como um argumento.")
+    print(f"Uso: python {sys.argv[0]} /caminho/para/arquivo.txt")
+    sys.exit(1)
 
-    #Troque o valor dentro dos colchetes para alterar o arquivo acessado
-    instance_to_solve_carousel = all_instances_in_O_500[9]
+# 2. Pega o caminho do arquivo do argumento (sys.argv[1])
+caminho_da_instancia = sys.argv[1]
 
-    print(f"\n\n--- Preparando para resolver com Carrossel Guloso ---")
-    print(f"Re-lendo arquivo: {instance_to_solve_carousel['filepath']}")
-    fresh_instance_data_for_carousel = read_kpf_instance(instance_to_solve_carousel['filepath'])
+# 3. Verifica se o arquivo realmente existe
+if not os.path.isfile(caminho_da_instancia):
+    print(f"Erro: Arquivo de instância não foi encontrado em: {caminho_da_instancia}")
+    sys.exit(1)
 
+# A lógica antiga que definia 'target_directory', 'all_instances_in_O_500',
+# e 'instance_to_solve_carousel' foi completamente removida.
+# Agora, usamos a variável 'caminho_da_instancia' diretamente.
+# --- FIM DA SEÇÃO CORRIGIDA ---
+
+# O corpo principal do script agora usa a variável 'caminho_da_instancia'
+print(f"\n\n--- Preparando para resolver com Carrossel Guloso ---")
+# CORREÇÃO: Usamos a variável string 'caminho_da_instancia' diretamente.
+print(f"Lendo arquivo: {caminho_da_instancia}")
+fresh_instance_data_for_carousel = read_kpf_instance(caminho_da_instancia)
+
+
+# A verificação agora é feita sobre o resultado da leitura do arquivo
+if fresh_instance_data_for_carousel:
     start = time.time()
     print("\n" + "="*50)
     print("Executando a Construção do Carrossel Guloso")
@@ -32,10 +57,10 @@ if all_instances_in_O_500:
     carousel_solution = penalty_aware_greedy_construction(fresh_instance_data_for_carousel)
     end = time.time()
 
-    
     # --- Impressão dos Resultados Finais ---
     print("\n--- Solução Gerada pela Construção do Carrossel Guloso ---")
-    if carousel_solution and carousel_solution['objective_value'] > -float('inf'):
+    # Adicionada verificação para evitar erro caso a construção falhe
+    if carousel_solution and carousel_solution.get('objective_value', -float('inf')) > -float('inf'):
         print(f"Parâmetros usados: {carousel_solution['params']['type']}")
         print(f"Itens Selecionados (índices): {carousel_solution['selected_items_indices']}")
         print(f"Número de Itens Selecionados: {len(carousel_solution['selected_items_indices'])}")
@@ -48,10 +73,12 @@ if all_instances_in_O_500:
     else:
         print("Nenhuma solução viável foi encontrada pelo Carrossel Guloso.")
         print("\n" + "="*50)
+        # Se a primeira etapa falhar, encerramos para não causar mais erros.
+        sys.exit(0)
 
     
-    ALPHA_CAROUSEL = 2.0  # Ex: 2.0 significa que o número de giros é o tamanho da solução gulosa inicial
-    BETA_CAROUSEL = 0.8   # Ex: 80% dos itens da solução gulosa formam a elite inicial
+    ALPHA_CAROUSEL = 2.0
+    BETA_CAROUSEL = 0.8
 
     start = time.time()
     print("Executando a Busca Local do Carrossel Guloso")
@@ -64,7 +91,7 @@ if all_instances_in_O_500:
     print(f"Tipo de Heurística: {final_solution_dict['params']['type']}")
     print(f"Parâmetros (alpha, beta): ({final_solution_dict['params']['alpha']}, {final_solution_dict['params']['beta']})")
     print(f"Itens Selecionados (índices): {final_solution_dict['selected_items_indices']}")
-    print(f"Número de Itens Selecionados: {len(carousel_solution['selected_items_indices'])}")
+    print(f"Número de Itens Selecionados: {len(final_solution_dict['selected_items_indices'])}") # Corrigido para usar a solução mais recente
     print(f"Peso Total: {final_solution_dict['total_weight']} (Capacidade: {fresh_instance_data_for_carousel['capacity']})")
     print(f"Lucro Total dos Itens: {final_solution_dict['total_profit']:.2f}")
     print(f"Custo Total de Penalidades: {final_solution_dict['total_forfeit_cost']:.2f}")
@@ -91,7 +118,7 @@ if all_instances_in_O_500:
     print(f"Tempo decorrido: {end - start} segundos")
     print("\n" + "="*50)
     
-# ------------------------------------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------------------------------------
     start = time.time()
     print("Executando o VND (swaps 1-0, 0-1, 1-1, 2-1)")
     print("="*50)
@@ -127,4 +154,4 @@ if all_instances_in_O_500:
     print(f"Tempo decorrido: {end - start} segundos")
     print("\n" + "="*50)
 else:
-    print(f"Nenhuma instância carregada do diretório '{target_directory}'. Verifique o caminho ou o conteúdo do diretório.")
+    print(f"Nenhuma instância carregada do arquivo '{caminho_da_instancia}'. Verifique o caminho ou o conteúdo do arquivo.")

@@ -2,41 +2,63 @@ import sys
 import os
 import time
 
+# Adiciona o diretório pai ao path para encontrar a pasta 'utilities' e 'METAHEURISTICAS'
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from utilities import load_instances_from_directory, read_kpf_instance
-from dvgh import dynamic_value_greedy_heuristic_kpf
-from METAHEURISTICAS.ils import iterated_local_search_simple
-from METAHEURISTICAS.vnd import vnd
-from METAHEURISTICAS.ils_vnd import iterated_local_search_vnd
+# Tenta fazer as importações necessárias
+try:
+    from utilities import read_kpf_instance
+    from dvgh import dynamic_value_greedy_heuristic_kpf
+    from METAHEURISTICAS.ils import iterated_local_search_simple
+    from METAHEURISTICAS.vnd import vnd
+    from METAHEURISTICAS.ils_vnd import iterated_local_search_vnd
+except ImportError as e:
+    print(f"ERRO DE IMPORTAÇÃO: {e}")
+    print("Verifique se a estrutura de pastas está correta.")
+    print("A estrutura esperada é que as pastas 'utilities' e 'METAHEURISTICAS' estejam no mesmo nível que a pasta 'DVGH'.")
+    sys.exit(1)
 
-# Mude aqui para testar outras instâncias
-target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.New Instances', 'O', '1000'))
+# --- INÍCIO DA SEÇÃO CORRIGIDA ---
+# Removemos a lógica antiga e a substituímos por uma que lê o argumento da linha de comando.
 
-all_instances_in_O_500 = load_instances_from_directory(target_directory)
+# 1. Verifica se o caminho do arquivo foi passado como argumento
+if len(sys.argv) < 2:
+    print("Erro: Forneça o caminho para o arquivo da instância como um argumento.")
+    print(f"Uso: python {sys.argv[0]} /caminho/para/arquivo.txt")
+    sys.exit(1)
 
-if all_instances_in_O_500:
+# 2. Pega o caminho do arquivo do argumento (sys.argv[1])
+caminho_da_instancia = sys.argv[1]
 
-    #Troque o valor dentro dos colchetes para alterar o arquivo acessado
-    instance_reference_for_dvgh = all_instances_in_O_500[0]
-    
-    print(f"\n\n--- Preparando para resolver com DVGH ---")
-    print(f"Instância original (referência): {instance_reference_for_dvgh['filepath']}")
+# 3. Verifica se o arquivo realmente existe
+if not os.path.isfile(caminho_da_instancia):
+    print(f"Erro: Arquivo de instância não foi encontrado em: {caminho_da_instancia}")
+    sys.exit(1)
 
-    print(f"Re-lendo arquivo para garantir dados frescos para DVGH: {instance_reference_for_dvgh['filepath']}")
-    fresh_instance_data_for_dvgh = read_kpf_instance(instance_reference_for_dvgh['filepath'])
-    
-    print(f"\n--- Resolvendo instância com DVGH (dados frescos): {fresh_instance_data_for_dvgh['filepath']} ---")
+# A lógica antiga que definia 'target_directory', 'all_instances_in_O_500',
+# e 'instance_reference_for_dvgh' foi completamente removida.
+# --- FIM DA SEÇÃO CORRIGIDA ---
+
+# O corpo principal do script agora usa a variável 'caminho_da_instancia'
+print(f"\n\n--- Preparando para resolver com DVGH ---")
+# CORREÇÃO: Usamos a variável string 'caminho_da_instancia' diretamente.
+print(f"Instância (referência): {caminho_da_instancia}")
+print(f"Lendo arquivo para garantir dados frescos para DVGH: {caminho_da_instancia}")
+fresh_instance_data_for_dvgh = read_kpf_instance(caminho_da_instancia)
+
+# A verificação agora é feita sobre o resultado da leitura do arquivo
+if fresh_instance_data_for_dvgh:
+    # CORREÇÃO: Removemos a referência a ['filepath'], pois a variável já é o caminho.
+    print(f"\n--- Resolvendo instância com DVGH (dados frescos): {caminho_da_instancia} ---")
     print(f"Número de itens: {fresh_instance_data_for_dvgh['num_items']}, Capacidade: {fresh_instance_data_for_dvgh['capacity']}, Número de pares com penalidade: {fresh_instance_data_for_dvgh['num_forfeits']}")
-
-    # print_forfeit_pairs(fresh_instance_data_for_dvgh)
 
     start = time.time()
     dvgh_solution = dynamic_value_greedy_heuristic_kpf(fresh_instance_data_for_dvgh)
     end = time.time()
 
     print("\n--- Solução Gerada pela Heurística DVGH ---")
-    if dvgh_solution and dvgh_solution['objective_value'] > -float('inf'): # Verifica se uma solução válida foi retornada
+    # Adicionada verificação para evitar erro caso a construção falhe
+    if dvgh_solution and dvgh_solution.get('objective_value', -float('inf')) > -float('inf'):
         print(f"Itens Selecionados (índices): {dvgh_solution['selected_items_indices']}")
         print(f"Número de Itens Selecionados: {len(dvgh_solution['selected_items_indices'])}")
         print(f"Peso Total: {dvgh_solution['total_weight']} (Capacidade: {fresh_instance_data_for_dvgh['capacity']})")
@@ -47,6 +69,9 @@ if all_instances_in_O_500:
         print("\n" + "="*50)
     else:
         print("Nenhuma solução viável foi encontrada pela DVGH.")
+        print("\n" + "="*50)
+        # Se a primeira etapa falhar, encerramos para não causar mais erros.
+        sys.exit(0)
 
     
     # ------------------------------------------------------------------------------------------------------------------------------------------------
@@ -105,4 +130,4 @@ if all_instances_in_O_500:
     print(f"Tempo decorrido: {end - start} segundos")
     print("\n" + "="*50)    
 else:
-    print(f"Nenhuma instância carregada do diretório '{target_directory}'. Verifique o caminho ou o conteúdo do diretório.")
+    print(f"Nenhuma instância carregada do arquivo '{caminho_da_instancia}'. Verifique o caminho ou o conteúdo do diretório.")
