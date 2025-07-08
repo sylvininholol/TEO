@@ -36,12 +36,6 @@ def iterated_local_search_vnd(instance_data, max_iter_ils=50, perturbation_stren
     """
     ILS com VND que agora usa o VND otimizado.
     """
-    # A função de perturbação continua a mesma, pois já era construtiva
-    # e não recalculava a solução inteira repetidamente.
-    # ... (A função _perturbation não precisa de mudanças)
-    
-    # Restante do código do ILS com VND permanece o mesmo,
-    # apenas se beneficia da velocidade do novo `local_search_vnd`.
     
     profits = instance_data['profits']
     weights = instance_data['weights']

@@ -9,8 +9,8 @@ from dvgh import dynamic_value_greedy_heuristic_kpf
 from METAHEURISTICAS.ils import iterated_local_search_simple
 from METAHEURISTICAS.ils_vnd import iterated_local_search_vnd
 
-target_directory = "C:/Users/gmota/Downloads/kpf_soco_instances/O/500"
-# target_directory = "/home/sylvino/Faculdade/TEO/construcao_solucao_inicial/" # Testar instância
+# Mude aqui para testar outras instâncias
+target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.New Instances', 'O', '500'))
 
 all_instances_in_O_500 = load_instances_from_directory(target_directory)
 

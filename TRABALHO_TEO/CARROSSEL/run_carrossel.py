@@ -11,7 +11,8 @@ from METAHEURISTICAS.ils import iterated_local_search_simple
 from METAHEURISTICAS.ils_vnd import iterated_local_search_vnd
 #from HeuristicaComBrake import iterated_local_search_simple,iterated_local_search_vnd
 
-target_directory = "C:/Users/gmota/Downloads/kpf_soco_instances/O/500"
+# Mude aqui para testar outras instâncias
+target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.New Instances', 'O', '500'))
 all_instances_in_O_500 = load_instances_from_directory(target_directory)
 
 if all_instances_in_O_500:
@@ -46,10 +47,8 @@ if all_instances_in_O_500:
         print("\n" + "="*50)
 
     
-    ALPHA_CAROUSEL = 2.0  # Ex: 1.0 significa que o número de giros é o tamanho da solução gulosa inicial
-    BETA_CAROUSEL = 0.8   # Ex: 20% dos itens da solução gulosa formam a elite inicial
-    # Testar com 1.0 e 0.2
-    # Testar com 2.0 e 0.8
+    ALPHA_CAROUSEL = 2.0  # Ex: 2.0 significa que o número de giros é o tamanho da solução gulosa inicial
+    BETA_CAROUSEL = 0.8   # Ex: 80% dos itens da solução gulosa formam a elite inicial
 
     start = time.time()
     print("Executando a Busca Local do Carrossel Guloso")
