@@ -12,7 +12,7 @@ from local_grasp import grasp_local_search
 from utilities import load_instances_from_directory, read_kpf_instance # Sua função para ler dados
 
 # --- Parâmetros do GRASP e do Carrossel ---
-MAX_ITERATIONS_GRASP = 10       # Quantas vezes o GRASP vai rodar
+MAX_ITERATIONS_GRASP = 100       # Quantas vezes o GRASP vai rodar
 RCL_SIZE = 5                    # Tamanho da lista de candidatos aleatórios
 ALPHA_CAROUSEL = 1.0            # Parâmetro alpha para a busca local
 BETA_CAROUSEL = 0.3             # Parâmetro beta para a busca local
@@ -105,3 +105,5 @@ if all_instances_in_O_500:
         print("="*50  + "\n")
     else:
         print("Nenhuma solução viável foi encontrada.")
+else:
+    print(f"Nenhuma instância carregada do diretório '{target_directory}'. Verifique o caminho ou o conteúdo do diretório.")

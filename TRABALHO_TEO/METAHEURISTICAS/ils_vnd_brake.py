@@ -29,6 +29,7 @@ def local_search_vnd(solution_indices, instance_data):
             k = 0
         else:
             k += 1
+            #print("Vizinhança:", {k})
             
     return current_solution
 
