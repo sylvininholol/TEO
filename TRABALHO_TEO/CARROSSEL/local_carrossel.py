@@ -41,26 +41,21 @@ def carousel_local_search(initial_solution_indices, instance_data, alpha, beta):
     if elite_size == 0 and t > 0:
         elite_size = 1
 
-    # O conjunto elite (S_prime) é composto pelos primeiros 'elite_size' itens da solução inicial
     S_prime_deque = collections.deque(initial_solution_indices[:elite_size])
     current_prime_weight = sum(weights[i] for i in S_prime_deque)
     
-    # Itens disponíveis para o carrossel são todos que não estão na elite inicial
     items_available_for_carousel = set(range(num_items)) - set(S_prime_deque)
 
-    # 3. Loop do Carrossel
     num_iterations = int(round(alpha * t)) 
 
     for _ in range(num_iterations):
         if not S_prime_deque:
             break
         
-        # Remove o item mais antigo da elite
         item_removed = S_prime_deque.popleft()
         current_prime_weight -= weights[item_removed]
-        items_available_for_carousel.add(item_removed) # Devolve para o pool de disponíveis
+        items_available_for_carousel.add(item_removed) 
 
-        # Seleciona o melhor novo item para adicionar à elite
         item_to_add_to_prime = select_best_penalized_item_to_add(
             items_available_for_carousel, list(S_prime_deque),
             current_prime_weight, capacity,
@@ -71,9 +66,6 @@ def carousel_local_search(initial_solution_indices, instance_data, alpha, beta):
             S_prime_deque.append(item_to_add_to_prime)
             current_prime_weight += weights[item_to_add_to_prime]
             items_available_for_carousel.remove(item_to_add_to_prime)
-
-    # 4. Fase de Preenchimento Final (S_double_prime)
-    # Pega a elite resultante do carrossel e tenta preencher a capacidade restante
     
     final_solution_list = list(S_prime_deque)
     final_weight = current_prime_weight
@@ -94,7 +86,6 @@ def carousel_local_search(initial_solution_indices, instance_data, alpha, beta):
             
     final_solution_indices = sorted(final_solution_list)
 
-    # 5. Retornar a solução final no formato de dicionário
     final_profit, final_forfeit_cost, objective_value = calculate_solution_value(
         final_solution_indices, profits, forfeit_costs_matrix
     )

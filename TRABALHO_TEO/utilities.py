@@ -79,8 +79,6 @@ def load_instances_from_directory(directory_path):
 
     print(f"Lendo instâncias do diretório: {directory_path}")
     for filename in os.listdir(directory_path):
-        # Você pode adicionar um filtro aqui se houver outros tipos de arquivo no diretório
-        # Por exemplo, if filename.endswith(".dat"):
         filepath = os.path.join(directory_path, filename)
         if os.path.isfile(filepath):
             try:
@@ -104,8 +102,6 @@ def print_forfeit_pairs(instance_data):
     
     print("\n--- Conjuntos de Penalidade (Pares e Custos) ---")
     found_penalties = False
-    # Iteramos pela matriz triangular superior para evitar duplicatas (já que a matriz é simétrica)
-    # e para evitar pares de um item com ele mesmo (que não devem ter penalidade).
     for i in range(num_items):
         for j in range(i + 1, num_items): # Começa de i + 1 para pegar apenas pares (i, j) onde i < j
             cost = forfeit_costs_matrix[i][j]
@@ -140,9 +136,6 @@ def _calculate_item_penalty_with_solution(item_idx, solution_set, forfeit_costs_
     penalty = 0
     # Este loop garante que somamos a penalidade para cada par único {item_idx, sol_item}
     for sol_item in solution_set:
-        # Para garantir que acessemos a matriz da mesma forma que calculate_solution_value,
-        # podemos usar min/max ou simplesmente somar ambas as direções se a matriz for simétrica.
-        # A forma mais robusta que replica a lógica de pares únicos é:
         pair_penalty = forfeit_costs_matrix[min(item_idx, sol_item)][max(item_idx, sol_item)]
         penalty += pair_penalty
     return penalty

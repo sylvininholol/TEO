@@ -2,10 +2,7 @@ import sys
 import os
 import time
 
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-# Supondo que o código acima esteja em 'grasp_kpf.py'
 
 from build_grasp import penalty_aware_greedy_constructor_grasp
 from local_grasp import grasp_local_search
@@ -19,7 +16,8 @@ BETA_CAROUSEL = 0.3             # Parâmetro beta para a busca local
 
 # --- Carregamento da Instância ---
 
-target_directory = "C:/Users/gmota/Downloads/kpf_soco_instances/O/500"
+# Mude aqui para testar outras instâncias
+target_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.New Instances', 'O', '500'))
 all_instances_in_O_500 = load_instances_from_directory(target_directory)
 
 if all_instances_in_O_500:

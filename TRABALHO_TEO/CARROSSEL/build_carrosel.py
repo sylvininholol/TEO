@@ -43,20 +43,16 @@ def penalty_aware_greedy_construction(instance_data):
     capacity = instance_data['capacity']
     forfeit_costs_matrix = instance_data['forfeit_costs_matrix']
 
-    # 1. Construir a solução usando apenas a heurística construtiva
     solution_indices = penalty_aware_greedy_constructor(
         num_items, capacity, profits, weights, forfeit_costs_matrix
     )
     
-    # 2. Calcular os resultados finais
-    # (Supondo a existência da função calculate_solution_value)
     final_profit, final_forfeit_cost, objective_value = calculate_solution_value(
         solution_indices, profits, forfeit_costs_matrix
     )
     
     total_weight = sum(weights[i] for i in solution_indices)
     
-    # 3. Retornar o dicionário de resultados no mesmo formato do original
     return {
         'selected_items_indices': sorted(solution_indices),
         'total_weight': total_weight,

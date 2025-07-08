@@ -27,7 +27,6 @@ def _local_search_swap_1_0_optimized(current_solution_indices, instance_data):
         temp_solution_set = solution_set - {item_to_remove}
         penalty_gain = _calculate_item_penalty_with_solution(item_to_remove, temp_solution_set, forfeit_costs_matrix)
         
-        # Melhoria = Ganhos - Perdas
         improvement = penalty_gain - profit_loss
         
         if improvement > best_improvement:
@@ -124,8 +123,6 @@ def _local_search_swap_1_1_optimized(current_solution_indices, instance_data):
 
     return current_solution_indices, False
 
-# A função de swap 2-1 ainda será muito custosa, mas a otimização ajuda.
-# A complexidade ainda é alta, então use-a com cautela.
 def _local_search_swap_2_1_optimized(current_solution_indices, instance_data):
     """
     Busca Local (Troca 2-1) OTIMIZADA com cálculo delta.
@@ -155,7 +152,6 @@ def _local_search_swap_2_1_optimized(current_solution_indices, instance_data):
         temp_solution_set = solution_set - {r1, r2}
         penalty_gain_out_r1 = _calculate_item_penalty_with_solution(r1, temp_solution_set, forfeit_costs_matrix)
         penalty_gain_out_r2 = _calculate_item_penalty_with_solution(r2, temp_solution_set, forfeit_costs_matrix)
-        # Precisamos adicionar a penalidade entre r1 e r2 que também foi removida
         penalty_between_r1_r2 = forfeit_costs_matrix[min(r1, r2)][max(r1, r2)]
         
         total_penalty_gain = penalty_gain_out_r1 + penalty_gain_out_r2 + penalty_between_r1_r2
@@ -163,7 +159,6 @@ def _local_search_swap_2_1_optimized(current_solution_indices, instance_data):
         for item_in in range(num_items):
             if item_in not in solution_set:
                 if temp_weight + weights[item_in] <= capacity:
-                    # Efeito da adição de 'item_in'
                     profit_gain_in = profits[item_in]
                     penalty_loss_in = _calculate_item_penalty_with_solution(item_in, temp_solution_set, forfeit_costs_matrix)
                     
@@ -192,7 +187,7 @@ def _local_search_swap_2_1_optimized_first_improvement(current_solution_indices,
         return current_solution_indices, False
 
     best_improvement = 1e-9
-    best_move = (None, None, None) # (item_removido_1, item_removido_2, item_adicionado)
+    best_move = (None, None, None)
 
     current_weight = calculate_solution_weight(current_solution_indices, weights)
     solution_set = set(current_solution_indices)
@@ -209,7 +204,6 @@ def _local_search_swap_2_1_optimized_first_improvement(current_solution_indices,
         temp_solution_set = solution_set - {r1, r2}
         penalty_gain_out_r1 = _calculate_item_penalty_with_solution(r1, temp_solution_set, forfeit_costs_matrix)
         penalty_gain_out_r2 = _calculate_item_penalty_with_solution(r2, temp_solution_set, forfeit_costs_matrix)
-        # Precisamos adicionar a penalidade entre r1 e r2 que também foi removida
         penalty_between_r1_r2 = forfeit_costs_matrix[min(r1, r2)][max(r1, r2)]
         
         total_penalty_gain = penalty_gain_out_r1 + penalty_gain_out_r2 + penalty_between_r1_r2
@@ -217,17 +211,13 @@ def _local_search_swap_2_1_optimized_first_improvement(current_solution_indices,
         for item_in in range(num_items):
             if item_in not in solution_set:
                 if temp_weight + weights[item_in] <= capacity:
-                    # Efeito da adição de 'item_in'
                     profit_gain_in = profits[item_in]
                     penalty_loss_in = _calculate_item_penalty_with_solution(item_in, temp_solution_set, forfeit_costs_matrix)
                     
                     improvement = (profit_gain_in - penalty_loss_in) + (total_penalty_gain - profit_loss_out)
 
                     if improvement > best_improvement:
-                        # ENCONTRAMOS UMA MELHORIA, NÃO PRECISAMOS PROCURAR MAIS!
-                        # Aplicamos o movimento e saímos.
                         final_solution = [item for item in current_solution_indices if item != r1 and item != r2] + [item_in]
-                        return final_solution, True # Retorna imediatamente
+                        return final_solution, True
 
-    # Se o loop terminar sem encontrar melhoria, retorna a solução original
     return current_solution_indices, False
